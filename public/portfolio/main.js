@@ -1225,6 +1225,21 @@ function buildModule(module) {
     node.append(copy);
   }
   module.el = node;
+  const customPage = module.custom && customPageFor(module);
+  if (customPage) {
+    // One-click/tap way in, since double-click is unreliable on touch
+    // screens and the small tile is hard to hit when zoomed out.
+    const open = document.createElement("a");
+    open.className = "open-page";
+    open.href = customPage;
+    open.textContent = "open →";
+    open.addEventListener("pointerdown", (event) => event.stopPropagation());
+    open.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (wirePicking) event.preventDefault();
+    });
+    node.append(open);
+  }
   if (module.custom) {
     // Custom modules can be removed again; the × also removes their
     // wires and their saved cover.

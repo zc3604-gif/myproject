@@ -178,6 +178,23 @@ body {
   letter-spacing: 0.08em;
 }
 
+.node .open-page {
+  display: block;
+  padding: 5px 8px;
+  border-top: 1px solid #111;
+  background: #111;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.node .open-page:hover {
+  background: #fff;
+  color: #111;
+}
+
 .preview {
   position: relative;
   height: 132px;
