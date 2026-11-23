@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Zihan — Commission</title>
+    <link rel="stylesheet" href="./style.css?v=34" />
+    <style>
+      /* Commission form as a front-page module: same monospace type,
+         1px black borders, and the double frame (a second square around
+         the whole module, same as the works-page nodes). */
+      .commission-module {
+        position: relative;
+        width: min(420px, 100%);
+        margin: 8px auto 0;
+        box-shadow: 0 0 0 4px #fff, 0 0 0 5px #111;
+      }
+      .commission-module .preview {
+        height: auto;
+        padding: 12px 14px 14px;
+        border-bottom: 1px solid #111;
+      }
+      .commission-module .preview .kind {
+        margin: 0 0 4px;
+      }
+      .commission-module .preview h2 {
+        margin: 0 0 8px;
+        text-transform: uppercase;
+      }
+      .commission-module .preview .body {
+        font-size: 13.5px;
+        line-height: 1.45;
+      }
+      .commission-form {
+        padding: 14px;
+      }
+      .commission-form label {
+        display: block;
+        margin: 0 0 4px;
+        color: #333;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .commission-form .field {
+        margin-bottom: 14px;
+      }
+      .commission-form input,
+      .commission-form textarea {
+        width: 100%;
+        border: 1px solid #111;
+        background: #fff;
+        color: #111;
+        font: inherit;
+        font-size: 13.5px;
+        padding: 9px 10px;
+      }
+      .commission-form textarea {
+        min-height: 110px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      .commission-form input:focus,
+      .commission-form textarea:focus {
+        outline: 2px solid #111;
+        outline-offset: 0;
+      }
+      .commission-form button[type="submit"] {
+        width: 100%;
+        border: 1px solid #111;
+        background: #111;
+        color: #fff;
+        font: inherit;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 11px;
+        cursor: pointer;
+      }
+      .commission-form button[type="submit"]:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .status {
+        min-height: 1.4em;
+        margin: 0 0 14px;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+      .status.ok {
+        background: #111;
+        color: #fff;
+        padding: 10px 12px;
+      }
+      .status.err {
+        border: 1px solid #111;
+        padding: 10px 12px;
+      }
+      .back {
+        margin: 18px 0 0;
+        text-align: center;
+        font-size: 13px;
+      }
+      .back a {
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body class="works-page">
+    <header class="chrome">
+      <p class="path"><a href="./index.html">Zihan / portfolio</a> <span>/ commission</span></p>
+      <p class="help">Tell me about the piece you want. I reply by email.</p>
+    </header>
+    <main class="works">
+      <article class="node commission-module">
+        <div class="preview">
+          <p class="kind">Commission</p>
+          <h2>Commission</h2>
+          <p class="body">Want a piece made for you? Send a request and I will get back to you by email.</p>
+        </div>
+        <form class="commission-form" id="commission-form">
+          <p class="status" id="status" role="status" aria-live="polite"></p>
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" name="name" type="text" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" required placeholder="What should the piece be? Any size, materials, or references?"></textarea>
+          </div>
+          <div class="field">
+            <label for="budget">Budget</label>
+            <input id="budget" name="budget" type="text" autocomplete="off" placeholder="e.g. $500" />
+          </div>
+          <div class="field">
+            <label for="deadline">Deadline</label>
+            <input id="deadline" name="deadline" type="date" />
+          </div>
+          <button type="submit" id="submit-btn">Send request</button>
+        </form>
+      </article>
+      <p class="back"><a href="./index.html">&larr; Back to portfolio</a></p>
+    </main>
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+      // Publishable key: the public key Supabase issues for browser code.
+      // It only reaches what the table Row Level Security allows, so
+      // visitors can insert their own request but cannot read anyone else.
+      const SUPABASE_URL = "https://kylxmqckrfyeathzjpth.supabase.co";
+      const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_EboteWoFDSOtPNeoKA03KQ_D2GR5QDq";
+      const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+      const form = document.getElementById("commission-form");
+      const statusEl = document.getElementById("status");
+      const submitBtn = document.getElementById("submit-btn");
+
+      function showStatus(message, ok) {
+        statusEl.textContent = message;
+        statusEl.className = "status" + (ok ? " ok" : " err");
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending…";
+        const data = {
+          name: form.name.value.trim(),
+          email: form.email.value.trim(),
+          description: form.description.value.trim(),
+          budget: form.budget.value.trim() || null,
+          deadline: form.deadline.value || null,
+        };
+        const { error } = await supabase.from("commissions").insert([data]);
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send request";
+        if (error) {
+          // Plain-language errors: the two setup problems a visitor can
+          // hit are a missing table and a missing insert policy.
+          if (error.code === "PGRST205" || error.code === "42P01") {
+            showStatus("Sorry — the requests table is not set up yet, so this could not be sent. Please try again later.", false);
+          } else if (error.code === "42501") {
+            showStatus("Sorry — sending is blocked at the moment. Please try again later.", false);
+          } else {
+            showStatus("Sorry — something went wrong sending your request. Please try again.", false);
+          }
+          return;
+        }
+        form.reset();
+        showStatus("Sent — thank you! I will reply to your email soon.", true);
+      });
+    </script>
+  </body>
+</html>
