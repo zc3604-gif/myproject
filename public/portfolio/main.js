@@ -1121,8 +1121,17 @@ const customPages = {
   commission: "./commission.html",
 };
 
+// Ids of repo-saved custom modules (state.json) that have a page. A
+// browser can hold its own local copy of the same id under an older
+// title, which would otherwise hide the page link on that device only.
+const customPageIds = {};
+for (const def of sharedState?.front?.customModules || []) {
+  const page = def && customPages[String(def.title || "").trim().toLowerCase()];
+  if (page) customPageIds[def.id] = page;
+}
+
 function customPageFor(module) {
-  return customPages[String(module.title || module.kind || "").trim().toLowerCase()];
+  return customPages[String(module.title || module.kind || "").trim().toLowerCase()] || customPageIds[module.id];
 }
 
 function bindEditable(element, moduleId, field) {
