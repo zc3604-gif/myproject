@@ -1115,6 +1115,16 @@ const workPages = {
   "3d": "./models.html",
 };
 
+// Custom modules ("Add module") are matched to a page by their title,
+// since their ids (custom-1, custom-2, ...) are assigned at creation.
+const customPages = {
+  commission: "./commission.html",
+};
+
+function customPageFor(module) {
+  return customPages[String(module.title || module.kind || "").trim().toLowerCase()];
+}
+
 function bindEditable(element, moduleId, field) {
   element.spellcheck = false;
   if (!workPages[moduleId]) element.addEventListener("pointerdown", (event) => event.stopPropagation());
@@ -1130,6 +1140,9 @@ function buildModule(module) {
   if (workPages[module.id]) {
     node.classList.add("link");
     node.title = "Open works";
+  } else if (module.custom && customPageFor(module)) {
+    node.classList.add("link");
+    node.title = "Double-click to open";
   }
   node.style.left = `${module.x}px`;
   node.style.top = `${module.y}px`;
@@ -1170,6 +1183,14 @@ function buildModule(module) {
       event.stopPropagation();
       if (!byId[module.id]) return;
       if (event.target.closest(".remove-custom, .upload, input")) return;
+      // A custom module with its own page (e.g. "commission") opens it
+      // instead of renaming; Shift+double-click still renames it.
+      const page = customPageFor(module);
+      if (page && !event.shiftKey) {
+        if (wirePicking) return;
+        window.location.href = page;
+        return;
+      }
       const next = window.prompt("Rename module:", module.title || module.kind);
       if (next === null) return;
       const name = next.trim() || "New module";
