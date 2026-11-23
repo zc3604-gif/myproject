@@ -1,23 +1,34 @@
 // Commission request form.
 //
-// Interface only for now: submissions are validated and handed to
-// submitCommission(), which is a placeholder. To store them in Firebase,
-// replace the body of submitCommission() with a Firestore write, e.g.
+// Submissions are stored in Supabase, table public.commissions
+// (email, description, budget, currency, page, created_at). View them in
+// the Supabase dashboard: Table Editor -> commissions.
 //
-//   import { initializeApp } from "https://www.gstatic.com/firebasejs/<version>/firebase-app.js";
-//   import { getFirestore, collection, addDoc, serverTimestamp }
-//     from "https://www.gstatic.com/firebasejs/<version>/firebase-firestore.js";
-//   const db = getFirestore(initializeApp({ /* your firebaseConfig */ }));
-//   async function submitCommission(data) {
-//     await addDoc(collection(db, "commissions"), { ...data, createdAt: serverTimestamp() });
-//   }
+// The publishable key below is meant to be public. Row level security on
+// the table only lets visitors INSERT; nobody can read, edit or delete
+// rows with it. Never put the secret / service_role key in this file.
 //
 // Anything thrown from submitCommission() shows as an error message under
 // the button and leaves the form filled in so the visitor can retry.
 
+const SUPABASE_URL = "https://xcmehnjwckgteltgneqt.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_domY8AsxTnkeBCH6MzaHeg_I5P7qmgi";
+
 async function submitCommission(data) {
-  console.info("[commission] Not connected to a backend yet. Would submit:", data);
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/commissions`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_PUBLISHABLE_KEY,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(data),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`Supabase ${response.status}: ${detail}`);
+  }
 }
 
 const form = document.getElementById("commission-form");
