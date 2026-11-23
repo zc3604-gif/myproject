@@ -9,6 +9,10 @@
         "x": -204,
         "y": 126
       },
+      "custom-1": {
+        "x": 0,
+        "y": 0
+      },
       "p5": {
         "x": 164,
         "y": 82
@@ -27,7 +31,30 @@
       }
     },
     "view": null,
-    "wirePorts": {}
+    "wirePorts": {
+      "artist>video:to": 351,
+      "artist>vj:to": 353,
+      "artist>p5:to": 310,
+      "vj>works:from": 133,
+      "video>works:from": 144,
+      "video>works:to": 851,
+      "artist>video:from": 334,
+      "artist>3d:from": 374
+    },
+    "customModules": [
+      {
+        "id": "custom-1",
+        "title": "commission",
+        "x": 0,
+        "y": 0
+      }
+    ],
+    "customLinks": [
+      [
+        "custom-1",
+        "artist"
+      ]
+    ]
   },
   "version": 1,
   "works": {

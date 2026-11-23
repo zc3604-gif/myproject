@@ -150,6 +150,27 @@ for (const def of readCustomStore()) {
     custom: true,
   });
 }
+// Repo-saved custom modules (state.json front.customModules): same shape
+// as the local store, loaded the same way, under localStorage — so a
+// custom module saved to the repo shows up for every visitor, not just
+// the browser that added it. A deleted one stays deleted, like above.
+for (const def of sharedState?.front?.customModules || []) {
+  if (!def || typeof def.id !== "string" || !def.id.startsWith("custom-")) continue;
+  if (removedCustoms.includes(def.id)) continue;
+  if (modules.some((m) => m.id === def.id)) continue;
+  const title = typeof def.title === "string" && def.title ? def.title : "New module";
+  modules.push({
+    id: def.id,
+    x: Number.isFinite(def.x) ? def.x : 0,
+    y: Number.isFinite(def.y) ? def.y : 0,
+    w: 112,
+    h: 84,
+    small: true,
+    kind: title,
+    title,
+    custom: true,
+  });
+}
 const posKey = "portfolio-module-positions";
 const lockKey = "portfolio-layout-locked";
 let layoutLocked = true;
@@ -249,6 +270,18 @@ for (const pair of readCustomLinks()) {
   if (from === to) continue;
   if (!modules.some((m) => m.id === from) || !modules.some((m) => m.id === to)) continue;
   if (links.some(([a, b]) => a === from && b === to)) continue;
+  links.push([from, to]);
+}
+// Repo-saved custom wires (state.json front.customLinks): same shape,
+// loaded the same way, so a wire saved to the repo shows up for every
+// visitor. A wire deleted with Backspace stays deleted (removedLinks).
+for (const pair of sharedState?.front?.customLinks || []) {
+  if (!Array.isArray(pair) || pair.length !== 2) continue;
+  const [from, to] = pair;
+  if (from === to) continue;
+  if (!modules.some((m) => m.id === from) || !modules.some((m) => m.id === to)) continue;
+  if (links.some(([a, b]) => a === from && b === to)) continue;
+  if (readRemovedLinks().some(([x, y]) => (x === from && y === to) || (x === to && y === from))) continue;
   links.push([from, to]);
 }
 
